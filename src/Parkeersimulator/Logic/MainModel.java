@@ -198,7 +198,6 @@ public class MainModel implements Runnable {
 		
 		carsEntering(CarType.AD_HOC);
 		carsEntering(CarType.PARKINGPASS);
-		carsEntering(CarType.RESERVATION);
 	}
 
 	private void handleExit() {
@@ -268,7 +267,7 @@ public class MainModel implements Runnable {
 
 	public Location getFirstFreeLocation(CarType type) {
 		int start = type.getMinRow();
-		int end = type.getMaxRow() > -1 && type.getMaxRow() < getNumberOfFloors() ? type.getMaxRow() : getNumberOfFloors();
+		int end = type.getMaxRow() > -1 && type.getMaxRow() < getNumberOfFloors() * getNumberOfRows() ? type.getMaxRow() : getNumberOfFloors() * getNumberOfRows();
 		
 		int sFloor = start / getNumberOfRows();
 		int sRow = start % getNumberOfRows();
@@ -277,7 +276,7 @@ public class MainModel implements Runnable {
 		int eRow = end % getNumberOfRows();
 		
 		for (int floor = sFloor; floor <= eFloor; floor++) {
-			for (int row = floor == sFloor ? sRow : 0; row < (floor == eFloor ? eRow : getNumberOfRows()); row++) {
+			for (int row = floor == sFloor ? sRow : 0; row < (floor >= eFloor ? eRow : getNumberOfRows()); row++) {
 				for (int place = 0; place < getNumberOfPlaces(); place++) {
 					Location location = new Location(floor, row, place);
 					if (getCarAt(location) == null) {

@@ -4,9 +4,9 @@ import java.awt.Color;
 import java.util.HashMap;
 
 public enum CarType {
-	PARKINGPASS(1, Color.BLUE, false, 0, 2),
-	RESERVATION(2, Color.GREEN, false, 2, -1),
-	AD_HOC(3, Color.RED, false, 4, -1);
+	PARKINGPASS(1, Color.BLUE, false, 0, 3),
+	RESERVATION(2, Color.GREEN, false, 0, -1),
+	AD_HOC(3, Color.RED, false, 3, -1);
 	
 	private int id;
     private Color color;
