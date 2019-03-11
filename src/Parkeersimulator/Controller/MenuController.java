@@ -1,6 +1,8 @@
 package Parkeersimulator.Controller;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -90,35 +92,11 @@ public class MenuController extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		this.resetButtons();
-		
-		//check if you clicked on menu button
-		for(JButton btn : this.mButtons.values()) {
-			//System.out.println(btn.getName());
-			
-			if(e.getSource() == btn) {
-				btn.setBackground(menuModel.btnActiveColor);
-				openPage(btn.getName());
-			}
-			else
-				btn.setBackground(menuModel.btnBgColor);
-		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		this.resetButtons();
-		
-		//check if you clicked on menu button
-		for(JButton btn : this.mButtons.values()) {
-			//System.out.println(btn.getName());
-			
-			if(e.getSource() == btn) {
-				btn.setBackground(menuModel.btnActiveColor);
-				this.openPage(btn.getName());
-			}
-			else
-				btn.setBackground(menuModel.btnBgColor);
-		}
 	}
 
 	@Override
@@ -148,18 +126,24 @@ public class MenuController extends JPanel implements MouseListener {
 		if(!pageExists(pageName))
 			return;
 		
+		//hide previous page
+		if(this.currPage != null) {
+			this.currPage.setVisible(false);
+		}
+		
 		menuOption mOption = menuOption.valueOf(pageName);
 		JPanel page;
 		
-		if(mPages.containsKey(pageName)) {
-			this.mPages.get(pageName);
-		}{
+		if(mPages.containsKey(pageName))
+			page = mPages.get(pageName);
+		else {
 			page = CreatePage(mOption);
+			menuModel.add(page, BorderLayout.NORTH);
 			this.mPages.put(pageName, page);
 		}
 		
+		this.currPage = page;
 		page.setVisible(true);
-		
 	}
 	
 	public boolean pageExists(String pageName)
@@ -171,20 +155,6 @@ public class MenuController extends JPanel implements MouseListener {
 		}
 		
 		return false;
-	}
-	
-	public JPanel drawPage(menuOption mOption)
-	{
-		switch(mOption)
-		{
-			case Instellingen:
-				break;
-			
-			case Statistieken:
-				break;
-		}
-		
-		return null;
 	}
 	
 	public void resetButtons() {
@@ -201,27 +171,48 @@ public class MenuController extends JPanel implements MouseListener {
 	public JPanel CreatePage(menuOption type) {
 		JPanel page = new JPanel();
 		
-		page.setBounds(0, menuModel.topHeight, menuModel.getWidth(), menuModel.getHeight() - menuModel.topHeight);
 		page.setLayout(null);
-		page.setBackground(Color.orange);
+		page.setBackground(null);
+		page.setBounds(0, 0, menuModel.mainWidth, menuModel.mainHeight - menuModel.topHeight);
 		
 		switch(type) {
 			case Instellingen:
 				this.settings = mainModel.GetSettings();
 				
-				for(int i = 0; i < this.settings.size(); i++) {
-					SimSetting setting = this.settings.get(i);
+				int sIndex = 0;
+				
+				int mTop = 5;
+				int mLeft = 15;
+				
+				//slider height
+				int sHeight = 20;
+				
+				int height = 40;
+				
+				for(SimSetting setting : this.settings.values()) {
+					if(!setting.isCustomizeable())
+						continue;
 					
-					JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 30, 15);
+					//text
+					JLabel text = new JLabel(setting.getName());
+					text.setBounds(mLeft, mTop + sIndex*height, menuModel.mainWidth - mLeft*2, height - sHeight);
 					
-					slider.setMajorTickSpacing(10);
-					slider.setMinorTickSpacing(1);
-					slider.setPaintTicks(true);
-					slider.setPaintLabels(true);
+					//slider
+					JSlider slider = new JSlider(JSlider.HORIZONTAL, setting.getMin(), setting.getMax(), setting.getVal());
 					
-					slider.setLocation(new Point(0, MenuModel.optionHeight * i));
+					slider.setMajorTickSpacing(setting.getMajorSpacing());
+					slider.setMinorTickSpacing(setting.getMinorSpacing());
+					slider.setPaintTicks(false);
+					slider.setPaintLabels(false);
+					slider.setName(setting.getName());
+					
+					slider.setBounds(mLeft, mTop + sIndex*height + height - sHeight, menuModel.mainWidth - mLeft*2, mTop + sHeight);
+					slider.setBackground(null);
 					
 					page.add(slider);
+					page.add(text);
+					
+					sIndex++;
 				}
 				
 				break;
@@ -229,14 +220,12 @@ public class MenuController extends JPanel implements MouseListener {
 			case Statistieken:
 				this.stats = mainModel.GetStats();
 				
-				for(int i = 0; i < this.stats.size(); i++) {
+				/*for(int i = 0; i < this.stats.size(); i++) {
 					SimStat stat = this.stats.get(i);
-				}
+				}*/
 				
 				break;
 		}
-		
-		this.add(page);
 		
 		return page;
 	}

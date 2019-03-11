@@ -28,9 +28,6 @@ public class Simulator {
 	private static int mainWidth = 1100;
 	private static int mainHeight = 600;
 	
-	private static int menuWidth = 400;
-	private static int menuHeight = mainHeight;
-	
 	private static Color bgColor = new Color(220,220,220);
 	private static Color borderColor = new Color(44,50,143);
 	private static int borderWidth = 1;
@@ -57,7 +54,8 @@ public class Simulator {
 		
 		mainScreen.getRootPane().setBorder(
 		        BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, borderColor));
-		
+
+		mainScreen.getContentPane().add(menuModel);
 		mainScreen.getContentPane().add(mainController);
 		
 		mainScreen.getContentPane().add(menuView);
@@ -66,10 +64,12 @@ public class Simulator {
 		mainScreen.getContentPane().add(mapView);
 		mainScreen.getContentPane().add(mapController);
 		
-		menuController.setBounds(mainWidth - menuWidth, 0, menuWidth, menuHeight);
-		menuView.setBounds(mainWidth - menuWidth, 0, menuWidth, menuHeight);
-		mapController.setBounds(0,0, mainWidth - menuWidth, mainHeight);
-		mapView.setBounds(0,0, mainWidth - menuWidth, mainHeight);
+		menuController.setBounds(mainWidth - menuModel.mainWidth, 0, menuModel.mainWidth, menuModel.mainHeight);
+		menuView.setBounds(mainWidth - menuModel.mainWidth, 0, menuModel.mainWidth, menuModel.mainHeight);
+		mapController.setBounds(0,0, mainWidth - menuModel.mainWidth, mainHeight);
+		mapView.setBounds(0,0, mainWidth - menuModel.mainWidth, mainHeight);
+		
+		menuModel.setBounds(mainWidth - menuModel.mainWidth, menuModel.topHeight, mainWidth, mainHeight - menuModel.topHeight);
 		
 		mainScreen.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		mainScreen.setVisible(true);

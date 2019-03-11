@@ -37,7 +37,14 @@ public class MenuModel extends JPanel {
 	public static int textWidth = 200;
 	public static int optionHeight = 100;
 	
+	//menu size
+	public static int mainHeight = 600;
+	public static int mainWidth = 400;
+	
 	public MenuModel() {
+		this.setLayout(null);
+		this.setBackground(this.contentColor);
+		//this.repaint();
 	}
 	
 	@Override public void paintComponent(Graphics g) {

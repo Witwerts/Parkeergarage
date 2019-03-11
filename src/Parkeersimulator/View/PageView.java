@@ -1,5 +1,7 @@
 package Parkeersimulator.View;
 
+import java.awt.Graphics;
+
 import javax.swing.JPanel;
 
 import Parkeersimulator.Logic.MainModel;
@@ -12,5 +14,9 @@ public class PageView extends JPanel {
 	public PageView(MainModel mainModel, MenuModel menuModel) {
 		this.mainModel = mainModel;
 		this.menuModel = menuModel;
+	}
+	
+	@Override public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 	}
 }

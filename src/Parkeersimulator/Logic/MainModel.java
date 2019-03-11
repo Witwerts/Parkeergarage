@@ -44,28 +44,28 @@ public class MainModel implements Runnable {
 		this.numberOfPlaces = 30;
 		
 		//add settings
-		updateSetting(new SimSetting("ResQueues", "Aantal wachtrijen (gereserveerden)", 1, 1, 10, 10));
-		updateSetting(new SimSetting("PassQueues", "Aantal wachtrijen (abonnees)", 1, 1, 10, 10));
-		updateSetting(new SimSetting("TotalQueues", "Aantal wachtrijen (normaal)", 1, 1, 10, 10));
+		updateSetting(new SimSetting("ResQueues", "Aantal wachtrijen (gereserveerden)", 1, 1, 10, 10, false));
+		updateSetting(new SimSetting("PassQueues", "Aantal wachtrijen (abonnees)", 1, 1, 10, 10, false));
+		updateSetting(new SimSetting("TotalQueues", "Aantal wachtrijen (normaal)", 1, 1, 10, 10, false));
 		
-		updateSetting(new SimSetting("TotalPassHolders", "Aantal abonnementen", 100, 100, 1000, 100));
-		updateSetting(new SimSetting("Speed", "Snelheid simulatie", 100, 100, 1000, 10));
-		updateSetting(new SimSetting("TotalDays", "Aantal dagen laten runnen", 1, 1, this.days.length, 1));
+		updateSetting(new SimSetting("TotalPassHolders", "Aantal abonnementen", 100, 100, 1000, 100, true));
+		updateSetting(new SimSetting("Speed", "Snelheid simulatie", 100, 100, 1000, 10, true));
+		updateSetting(new SimSetting("TotalDays", "Aantal dagen laten runnen", 1, 1, this.days.length, 1, true));
 		
-		updateSetting(new SimSetting("CostAdhoc", "Prijs per uur (normaal)", 3.25, 0.00, 1000.00, 1000));
-		updateSetting(new SimSetting("CostPass", "Kosten abonnement", 40.00, 0.00, 1000.00, 1000));
-		updateSetting(new SimSetting("CostRes", "Kosten reservatie", 5.00, 0.00, 1000.00, 1000));
+		updateSetting(new SimSetting("CostAdhoc", "Prijs per uur (normaal)", 3.25, 0.00, 1000.00, 100000, true));
+		updateSetting(new SimSetting("CostPass", "Kosten abonnement", 40.00, 0.00, 1000.00, 100000, true));
+		updateSetting(new SimSetting("CostRes", "Kosten reservatie", 5.00, 0.00, 1000.00, 100000, true));
 		
-		updateSetting(new SimSetting("WeekDayArrivals", "Aantal auto's per uur (doordeweeks)", 100, 100, 1000, 10));
-		updateSetting(new SimSetting("WeekendArrivals", "Aantal auto's per uur (weekend)", 200, 100, 1000, 10));
-		updateSetting(new SimSetting("WeekPassArrivals", "Percentage abonnees (doordeweeks)", 10.00, 1.00, 100.00, 100));
-		updateSetting(new SimSetting("WeekendPassArrivals", "Percentage abonnees (weekend)", 15.00, 1.00, 100.00, 100));
-		updateSetting(new SimSetting("WeekDayReservations", "Aantal reservingen (doordeweeks)", 75, 0, 1000, 100));
-		updateSetting(new SimSetting("WeekendReserverations", "Aantal reserveringen (weekend)", 150, 0, 1000, 100));
+		updateSetting(new SimSetting("WeekDayArrivals", "Aantal auto's per uur (doordeweeks)", 100, 100, 1000, 10, true));
+		updateSetting(new SimSetting("WeekendArrivals", "Aantal auto's per uur (weekend)", 200, 100, 1000, 10, false));
+		updateSetting(new SimSetting("WeekPassArrivals", "Percentage abonnees (doordeweeks)", 10.00, 1.00, 100.00, 100, true));
+		updateSetting(new SimSetting("WeekendPassArrivals", "Percentage abonnees (weekend)", 15.00, 1.00, 100.00, 100, false));
+		updateSetting(new SimSetting("WeekDayReservations", "Aantal reservingen (doordeweeks)", 75, 0, 1000, 1000, true));
+		updateSetting(new SimSetting("WeekendReserverations", "Aantal reserveringen (weekend)", 150, 0, 1000, 1000, false));
 		
-		updateSetting(new SimSetting("EnterSpeed", "Aantal auto's (per minuut)", 3, 1, 10, 10));
-		updateSetting(new SimSetting("PaymentSpeed", "Aantal betaalde klanten (per minuut)", 7, 1, 10, 10));
-		updateSetting(new SimSetting("ExitSpeed", "Aantal verlatende klanten (per minuut)", 5, 1, 10, 10));
+		updateSetting(new SimSetting("EnterSpeed", "Aantal auto's (per minuut)", 3, 1, 10, 10, true));
+		updateSetting(new SimSetting("PaymentSpeed", "Aantal betaalde klanten (per minuut)", 7, 1, 10, 10, true));
+		updateSetting(new SimSetting("ExitSpeed", "Aantal verlatende klanten (per minuut)", 5, 1, 10, 10, true));
 
 		this.reset();
 	}
@@ -198,6 +198,7 @@ public class MainModel implements Runnable {
 		
 		carsEntering(CarType.AD_HOC);
 		carsEntering(CarType.PARKINGPASS);
+		carsEntering(CarType.RESERVATION);
 	}
 
 	private void handleExit() {

@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public enum CarType {
 	PARKINGPASS(1, Color.BLUE, false, 0, 3),
-	RESERVATION(2, Color.GREEN, false, 0, -1),
+	RESERVATION(2, Color.GREEN, false, 16, -1),
 	AD_HOC(3, Color.RED, false, 3, -1);
 	
 	private int id;
