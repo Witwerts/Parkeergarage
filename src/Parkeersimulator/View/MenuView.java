@@ -46,11 +46,6 @@ public class MenuView extends JPanel {
 		
 		g.setColor(new Color(0,0,0,0));
 		g.fillRect(menuModel.sideWidth + menuModel.borderWidth, 0, this.getWidth() - menuModel.borderWidth, menuModel.topHeight);
-		
-		//draw menu content
-		
-		g.setColor(menuModel.contentColor);
-		g.fillRect(menuModel.sideWidth + menuModel.borderWidth, menuModel.topHeight, this.getWidth() - menuModel.borderWidth, this.getHeight() - menuModel.topHeight);
 	}
 	
 	public MenuView(MainModel mainModel, MenuModel menuModel) {

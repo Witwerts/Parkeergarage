@@ -8,42 +8,46 @@ import javax.swing.JPanel;
 
 public class MenuModel extends JPanel {
 	//color of the menu itself
-	public static Color bgColor = new Color(63,72,204);
-	public static Color contentColor = new Color(96,104,213);
-	public static Color borderColor = Color.BLACK;
+	public Color bgColor = new Color(63,72,204);
+	public Color contentColor = new Color(96,104,213);
+	public Color borderColor = Color.BLACK;
 	
 	//colors of the menu button
-	public static Color btnBgColor = new Color(bgColor.getRed() + 10, bgColor.getGreen() + 10, bgColor.getBlue() + 10);
-	public static Color btnHoverColor = new Color(bgColor.getRed() + 20, bgColor.getGreen() + 20, bgColor.getBlue() + 20);
-	public static Color btnActiveColor = contentColor;
+	public Color btnBgColor = new Color(bgColor.getRed() + 10, bgColor.getGreen() + 10, bgColor.getBlue() + 10);
+	public Color btnHoverColor = new Color(bgColor.getRed() + 20, bgColor.getGreen() + 20, bgColor.getBlue() + 20);
+	public Color btnActiveColor = contentColor;
 	
 	//size of the sidebar/button
-	//public static int sideWidth = 30;
-	//public static int sideHeight = 70;
-	public static int sideWidth = 0;
-	public static int sideHeight = 0;
+	//public int sideWidth = 30;
+	//public int sideHeight = 70;
+	public int sideWidth = 0;
+	public int sideHeight = 0;
 	
 	//height of the top bar
-	public static int topHeight = 42;
+	public int topHeight = 42;
 	
 	//menu button size
-	public static int btnHeight = 34;
-	public static int btnWidth = 120;
-	public static int btnMargin = 12;
+	public int btnHeight = 34;
+	public int btnWidth = 120;
+	public int btnMargin = 12;
 	
 	//menu border width
-	public static int borderWidth = 2;
+	public int borderWidth = 2;
 	
-	public static int textWidth = 200;
-	public static int optionHeight = 100;
+	public int textWidth = 200;
+	public int optionHeight = 100;
 	
 	//menu size
-	public static int mainHeight = 600;
-	public static int mainWidth = 400;
+	public int mainHeight = 600;
+	public int mainWidth = 400;
+	
+	//editor size
+	public int editorHeight = 50;
+	public int editorWidth = mainWidth;
 	
 	public MenuModel() {
 		this.setLayout(null);
-		this.setBackground(this.contentColor);
+		this.setBackground(this.bgColor);
 		//this.repaint();
 	}
 	

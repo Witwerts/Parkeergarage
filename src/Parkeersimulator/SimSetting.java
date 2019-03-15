@@ -1,24 +1,56 @@
 package Parkeersimulator;
 
-public class SimSetting {
+public class SimSetting implements Cloneable {
 	private String id;
 	private String name;
-	private Object value;
+	private int value;
 	
-	private Object minValue;
-	private Object maxValue;
+	private int minValue;
+	private int maxValue;
+	
+	private int defValue;
+	
 	private int steps;
 	
 	private boolean customizeable;
+	private boolean hasDecimal;
 	
 	public SimSetting(String id, String name, Object defValue, Object minValue, Object maxValue, int steps, boolean edit) {
 		this.id = id;
 		this.name = name;
-		this.value = defValue;
-		this.minValue = minValue;
-		this.maxValue = maxValue;
+		
+		this.hasDecimal = defValue instanceof Double;
+		this.value = this.hasDecimal() ? (int)((double)defValue*100) : (int)defValue;
+		this.defValue = this.value;
+		
+		this.minValue = this.hasDecimal() ? (int)((double)minValue*100) : (int)minValue;
+		this.maxValue = this.hasDecimal() ? (int)((double)maxValue*100) : (int)maxValue;
+		
 		this.steps = steps;
 		this.setCustomizeable(edit);
+
+		this.reset();
+	}
+	
+	public SimSetting clone() {
+		Object setting = null;
+		
+		try {
+			setting = super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return (SimSetting)setting;
+	}
+	
+	public void reset() {
+		this.value = this.defValue;
+	}
+	
+	public void save() {
+		this.defValue = this.value;
 	}
 
 	public String getId() {
@@ -38,14 +70,18 @@ public class SimSetting {
 	}
 
 	public Object getValue() {
-		return value;
+		return this.hasDecimal() ? (double)(this.value / 100) : (int)this.value; 
+	}
+	
+	public String val() {
+		return this.hasDecimal() ? String.format("%.2f", (double)(this.value / 100)) : String.valueOf(this.value);
 	}
 	
 	public int getVal() {
-		return this.hasDecimal() ? (int)((double)this.value * 100) : (int)this.value; 
+		return this.value; 
 	}
 
-	public void setValue(Object value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 
@@ -54,11 +90,7 @@ public class SimSetting {
 	}
 	
 	public int getMin() {
-		return this.hasDecimal() ? (int)((double)this.minValue * 100) : (int)this.minValue; 
-	}
-
-	public void setMinValue(Object minValue) {
-		this.minValue = minValue;
+		return minValue; 
 	}
 
 	public Object getMaxValue() {
@@ -66,19 +98,15 @@ public class SimSetting {
 	}
 	
 	public int getMax() {
-		return this.hasDecimal() ? (int)((double)this.maxValue * 100) : (int)this.maxValue; 
-	}
-
-	public void setMaxValue(Object maxValue) {
-		this.maxValue = maxValue;
+		return this.maxValue; 
 	}
 
 	public int getSteps() {
-		return steps;
+		return this.steps;
 	}
 	
 	public int getMinorSpacing() {
-		return Math.max(1, (this.getMax() - this.getMin()) / this.steps);
+		return Math.max(1, (this.getMax() - this.getMin()) / this.getSteps());
 	}
 	
 	public int getMajorSpacing() {
@@ -94,7 +122,7 @@ public class SimSetting {
 	}
 	
 	public boolean hasDecimal() {
-		return this.value instanceof Double;
+		return this.hasDecimal;
 	}
 
 	public void setSteps(int steps) {

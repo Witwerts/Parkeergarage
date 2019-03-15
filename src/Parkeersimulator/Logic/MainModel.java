@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.text.DecimalFormat;
 import java.util.*;
 
+import javax.swing.JLabel;
+
 import Parkeersimulator.*;
 import Parkeersimulator.View.*;
 
@@ -22,17 +24,21 @@ public class MainModel implements Runnable {
 	// settings
 	boolean run;
 	int currTime;
+	
+	//main thread
+	Thread mainThread;
 
 	ArrayList<View> views;
 
 	String[] days = new String[] { "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag" };
 	private HashMap<String, SimStat> stats;
-	private static HashMap<String, SimSetting> settings;
+	private HashMap<String, SimSetting> settings;
 
 	public MainModel() {
 		this.paymentCarQueue = new CarQueue();
 		this.exitCarQueue = new CarQueue();
 
+		this.mainThread = new Thread(this);
 		this.run = false;
 
 		this.views = new ArrayList<View>();
@@ -48,8 +54,8 @@ public class MainModel implements Runnable {
 		updateSetting(new SimSetting("PassQueues", "Aantal wachtrijen (abonnees)", 1, 1, 10, 10, false));
 		updateSetting(new SimSetting("TotalQueues", "Aantal wachtrijen (normaal)", 1, 1, 10, 10, false));
 		
-		updateSetting(new SimSetting("TotalPassHolders", "Aantal abonnementen", 100, 100, 1000, 100, true));
-		updateSetting(new SimSetting("Speed", "Snelheid simulatie", 100, 100, 1000, 10, true));
+		updateSetting(new SimSetting("TotalPassHolders", "Aantal abonnementen", 20, 0, 1000, 100, true));
+		updateSetting(new SimSetting("Speed", "Snelheid simulatie", 900, 100, 1000, 10, true));
 		updateSetting(new SimSetting("TotalDays", "Aantal dagen laten runnen", 1, 1, this.days.length, 1, true));
 		
 		updateSetting(new SimSetting("CostAdhoc", "Prijs per uur (normaal)", 3.25, 0.00, 1000.00, 100000, true));
@@ -66,12 +72,11 @@ public class MainModel implements Runnable {
 		updateSetting(new SimSetting("EnterSpeed", "Aantal auto's (per minuut)", 3, 1, 10, 10, true));
 		updateSetting(new SimSetting("PaymentSpeed", "Aantal betaalde klanten (per minuut)", 7, 1, 10, 10, true));
 		updateSetting(new SimSetting("ExitSpeed", "Aantal verlatende klanten (per minuut)", 5, 1, 10, 10, true));
-
-		this.reset();
+		
+		reset();
 	}
-
+	
 	public void reset() {
-		this.run = true;
 		this.currTime = 0;
 
 		this.cars = new Car[numberOfFloors][numberOfRows][numberOfPlaces];
@@ -89,13 +94,54 @@ public class MainModel implements Runnable {
 		}
 		
 		//(re)set basic statistics
-		addStat(new SimStat("Income", "Inkomsten", 0));
-		addStat(new SimStat("PassIncome", "Inkomsten abonnementen", (int)getSetting("TotalPassHolders").getValue() * (double)getSetting("CostPass").getValue()));
-		addStat(new SimStat("TotalLoss", "Opgelopen verlies", 0));
+		addStat(new SimStat("Income", "Inkomsten", 0.00));
+		addStat(new SimStat("PassIncome", "Inkomsten abonnementen", (double)(getSetting("TotalPassHolders").getVal() * (double)getSetting("CostPass").getValue())));
+		addStat(new SimStat("TotalLoss", "Opgelopen verlies", 0.00));
+		
+		addStat(new SimStat("TotalCars", "Totaal aantal auto's", 0));
+		addStat(new SimStat("TotalAdmittedCars", "Totaal aantal toegelaten auto's", 0));
+		addStat(new SimStat("TotalRejectedCars", "Totaal aantal geweigerde auto's", 0));
+		
+		addStat(new SimStat("PassHolders", "Totaal aantal abonnees", getSetting("TotalPassHolders").getVal()));
+		addStat(new SimStat("Reservations", "Aantal reserveringen", 0));
+	}
+	
+	public void start() {
+		if(this.run)
+			return;
+		
+		this.run = true;
+		this.mainThread = new Thread(this);
+		
+		try {
+            Thread.sleep(1000);
+            this.mainThread.interrupt();
+        } catch (InterruptedException ex) {
+        	//do nothing
+        }
+		
+		this.mainThread.start();
+	}
+	
+	public void run() {
+		while ((this.currTime / 24 / 60) < getSetting("TotalDays").getVal() && this.run && !this.mainThread.isInterrupted())
+		{	
+			tick();
+		}
+	}
+
+	public void stop() {
+		this.run = false;
+		
+		try {
+            Thread.sleep(1000);
+            this.mainThread.interrupt();
+        } catch (InterruptedException ex) {
+        }
 	}
 
 	public void updateSetting(SimSetting setting) {
-		this.settings.put(setting.getId(), setting);
+		this.settings.put(setting.getId(), setting.clone());
 	}
 
 	public int getTotalQueues(CarType type) {
@@ -103,17 +149,17 @@ public class MainModel implements Runnable {
 
 		switch (type) {
 			case AD_HOC:
-				total = (int) this.getSetting("TotalQueues").getValue();
+				total = this.getSetting("TotalQueues").getVal();
 	
 				break;
 	
 			case RESERVATION:
-				total = (int) this.getSetting("ResQueues").getValue();
+				total = this.getSetting("ResQueues").getVal();
 	
 				break;
 	
 			case PARKINGPASS:
-				total = (int) this.getSetting("PassQueues").getValue();
+				total = this.getSetting("PassQueues").getVal();
 	
 				break;
 		}
@@ -125,33 +171,30 @@ public class MainModel implements Runnable {
 		return this.settings.get(Id);
 	}
 
-	public boolean updateStat(String id, Object add) {
-		if (this.stats.containsKey(id)) {
-			if (add instanceof Integer)
-				this.stats.get(id).addValue((int) add);
-			else if (add instanceof Double)
-				this.stats.get(id).addValue((double) add);
-			else
-				this.stats.get(id).setValue(add);
-
-			return true;
+	public boolean updateStat(String id, double add) {
+		SimStat stat = this.stats.get(id);
+		
+		if (stat != null) {
+			stat.addValue(add);
+			this.stats.put(id, stat);
 		}
-
-		return false;
+		
+		return true;
+	}
+	
+	public boolean updateStat(String id, int add) {
+		SimStat stat = this.stats.get(id);
+		
+		if (stat != null) {
+			stat.addValue(add);
+			this.stats.put(id, stat);
+		}
+			
+		return true;
 	}
 
 	public void addStat(SimStat stat) {
-		this.stats.put(stat.getName(), stat);
-	}
-
-	@Override
-	public void run() {
-		while ((this.currTime / 24 / 60) < (int)getSetting("TotalDays").getValue() && this.run)
-			tick();
-	}
-
-	public void stop() {
-		this.run = false;
+		this.stats.put(stat.getId(), stat);
 	}
 
 	public void addView(View view) {
@@ -172,13 +215,20 @@ public class MainModel implements Runnable {
 		this.handleEntrance();
 		
 		SimSetting sSpeed = getSetting("Speed");
-
+		
+		if(!this.run)
+			return;
+		
 		try {
-			Thread.sleep((int)Math.max((int)sSpeed.getMinValue(), Math.min((int)sSpeed.getValue(), (int)sSpeed.getMaxValue())));
+			Thread.sleep((int)Math.max(sSpeed.getMin(), Math.min(sSpeed.getMax() - sSpeed.getVal(), sSpeed.getMax())));
+			Thread.interrupted();
 		} 
 		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		if(!this.run)
+			return;
 		
 		this.updateCars();
 
@@ -210,12 +260,14 @@ public class MainModel implements Runnable {
 	private void carsArriving() {
 		int numberOfCars;
 		
-		numberOfCars = getNumberOfCars((int)getSetting("WeekDayArrivals").getValue(), (int)getSetting("WeekendArrivals").getValue());
+		numberOfCars = getNumberOfCars(getSetting("WeekDayArrivals").getVal(), getSetting("WeekendArrivals").getVal());
 		addArrivingCars(numberOfCars, CarType.AD_HOC);
-		numberOfCars = getNumberOfCars((int)((int)getSetting("WeekDayArrivals").getValue() * (double)getSetting("WeekPassArrivals").getValue()), (int)((int)getSetting("WeekendArrivals").getValue() * (double)getSetting("WeekendPassArrivals").getValue()));
+		numberOfCars = getNumberOfCars((int)(getSetting("WeekDayArrivals").getVal() * (double)getSetting("WeekPassArrivals").getValue()), (int)(getSetting("WeekendArrivals").getVal() * (double)getSetting("WeekendPassArrivals").getValue()));
 		addArrivingCars(numberOfCars, CarType.PARKINGPASS);
-		numberOfCars = getNumberOfCars((int)getSetting("WeekDayReservations").getValue(), (int)getSetting("WeekendReserverations").getValue());
+		numberOfCars = getNumberOfCars(getSetting("WeekDayReservations").getVal(), getSetting("WeekendReserverations").getVal());
 		addArrivingCars(numberOfCars, CarType.RESERVATION);
+		
+		this.updateStat("Reservations", numberOfCars);
 	}
 
 	private void carsEntering(CarType type) {
@@ -230,14 +282,20 @@ public class MainModel implements Runnable {
 			
 			int i = 0;
 			
-			while (queue.carsInQueue() > 0 && i < (int)getSetting("EnterSpeed").getValue()) {
+			while (queue.carsInQueue() > 0 && i < getSetting("EnterSpeed").getVal()) {
 				Location freeLocation = this.getFirstFreeLocation(type);
 				Car car = queue.removeCar();
 				
-				if(freeLocation != null)
+				if(freeLocation != null) {
 					this.setCarAt(freeLocation, car);
-				else
-					updateStat("totalLoss", getCost(car, 0));
+					this.updateStat("TotalAdmittedCars", 1);
+				}
+				else {
+					this.updateStat("TotalLoss", (double)getCost(car, car.getMinutesLeft()));
+					this.updateStat("TotalRejectedCars", 1);
+				}
+				
+				updateStat("TotalCars", 1);
 				
 				i++;
 			}
@@ -262,6 +320,7 @@ public class MainModel implements Runnable {
 			default:
 				break;
 		}
+		
 		
 		return cost;
 	}
@@ -308,10 +367,12 @@ public class MainModel implements Runnable {
 	private void carsPaying() {
 		// Let cars pay.
 		int i = 0;
-		while (paymentCarQueue.carsInQueue() > 0 && i < (int)getSetting("PaymentSpeed").getValue()) {
+		
+		while (paymentCarQueue.carsInQueue() > 0 && i < getSetting("PaymentSpeed").getVal()) {
 			Car car = paymentCarQueue.removeCar();
-			// TODO Handle payment.
+			
 			carLeavesSpot(car);
+			this.updateStat("Income", (double)getCost(car, car.getSpentMinutes()));
 			i++;
 		}
 	}
@@ -319,7 +380,7 @@ public class MainModel implements Runnable {
 	private void carsLeaving() {
 		// Let cars leave.
 		int i = 0;
-		while (exitCarQueue.carsInQueue() > 0 && i < (int)getSetting("ExitSpeed").getValue()) {
+		while (exitCarQueue.carsInQueue() > 0 && i < getSetting("ExitSpeed").getVal()) {
 			exitCarQueue.removeCar();
 			i++;
 		}
@@ -435,6 +496,9 @@ public class MainModel implements Runnable {
 	}
 
 	private boolean locationIsValid(Location location) {
+		if(location == null)
+			return false;
+		
 		int floor = location.getFloor();
 		int row = location.getRow();
 		int place = location.getPlace();
@@ -448,6 +512,10 @@ public class MainModel implements Runnable {
 	
 	public HashMap<String, SimSetting> GetSettings() {
 		return this.settings;
+	}
+	
+	public void SetSettings(HashMap<String, SimSetting> settings) {
+		this.settings = new HashMap<String, SimSetting>(settings);
 	}
 	
 	public HashMap<String, SimStat> GetStats(){

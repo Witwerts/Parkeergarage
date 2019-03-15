@@ -75,6 +75,6 @@ public class Simulator {
 		mainScreen.setVisible(true);
 		
 		//start simulator
-        mainModel.run();
+        mainModel.start();
 	}
 }
